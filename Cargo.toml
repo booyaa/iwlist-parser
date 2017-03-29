@@ -1,0 +1,13 @@
+[package]
+name = "iwlist-parser"
+version = "0.1.0"
+authors = ["Mark Sta Ana <booyaabooyaabooyaa@gmail.com>"]
+description = "Parses iwlist output"
+repository = "https://github.com/booyaa/iwlist-parser"
+documentation = "https://docs.rs/iwlist-parser"
+readme = "README.md"
+keywords = ["wifi","iwlist","network"]
+license = "Apache-2.0"
+
+[dependencies]
+nom = "^2.2"
