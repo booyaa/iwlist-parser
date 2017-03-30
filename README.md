@@ -5,7 +5,7 @@
 [![docs.rs](https://docs.rs/iwlist-parser/badge.svg)](https://docs.rs/iwlist-parser)
 
 
-> It parses iwlist or it gets the hose again.
+> It parses the iwlist or it gets the hose again.
 
 Warning: Work in-progress, will be replace the current parser in [wifiscanner](https://github.com/booyaa/wifiscanner/).
 # Usage
