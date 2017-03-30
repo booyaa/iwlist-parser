@@ -5,9 +5,9 @@
 [![docs.rs](https://docs.rs/iwlist-parser/badge.svg)](https://docs.rs/iwlist-parser)
 
 
-It parses the output from iwlist, or it gets the hose!
+> It parses the output from iwlist or it gets the hose again.
 
-Very much a work in-progress, will be replace the current parser in [wifiscanner](https://github.com/booyaa/wifiscanner/).
+Warning: Work in-progress, will be replace the current parser in [wifiscanner](https://github.com/booyaa/wifiscanner/).
 # Usage
 
 TBC
