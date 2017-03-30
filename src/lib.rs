@@ -1,4 +1,5 @@
-#[macro_use] extern crate nom;
+#[macro_use]
+extern crate nom;
 use nom::IResult::Done;
 #[cfg(feature = "verbose-errors")]
 use nom::Err::Position;
@@ -20,6 +21,7 @@ named!(parse_essid<&str>, ws!(do_parse!(
 
 #[allow(dead_code)]
 named!(tag_address, ws!(tag!("Address: ") ) );
+#[allow(dead_code)]
 named!(parse_address<&str>, 
     do_parse!( 
             take!(20) >>
@@ -28,7 +30,20 @@ named!(parse_address<&str>,
             ( res.into() )
         ) );
 
-// parse_address: take(20) to glob [          Cell 01 - ]
+#[allow(dead_code)]
+named!(tag_channel, delimited!(
+            char!('('),
+            preceded!(tag!("Channel "), nom::digit),
+            char!(')')
+));
+
+#[allow(dead_code)]
+named!(parse_channel<&str>, do_parse!( // should probably be an int
+    take_until!("(") >> // junk
+    res : map_res!(tag_channel, str::from_utf8) >>
+    ( res.into() )
+) );
+
 
 #[cfg(test)]
 mod tests {
@@ -46,18 +61,24 @@ mod tests {
 
     #[test]
     fn it_finds_the_address() {
-        // TODO turn this into a helper func for debugging
-        // if let Done(_,res) = tag_address(&b"Address: 00:35:1A:6F:0F:40"[..]) {
-        //     println!("Hai! {:?}", str::from_utf8(res).unwrap() ) ;
-        // } else {
-        //     println!("nope");
-        // }
-        
         assert_eq!(Done(&[][..], "00:35:1A:6F:0F:40"), parse_address(&b"          Cell 01 - Address: 00:35:1A:6F:0F:40"[..]) );
+    }
+
+    #[test]
+    fn it_finds_the_channel() {
+        assert_eq!(Done(&[][..], "6"), parse_channel(&b"                    Frequency:2.437 GHz (Channel 6)"[..]) );
     }
 }
 
 
+/* useful snippets
+// TODO turn this into a helper func for debugging
+if let Done(_,res) = tag_address(&b"Address: 00:35:1A:6F:0F:40"[..]) {
+    println!("Hai! {:?}", str::from_utf8(res).unwrap() ) ;
+} else {
+    println!("nope");
+}
+*/
 
 /* sample hotspot
           Cell 01 - Address: 00:35:1A:6F:0F:40
