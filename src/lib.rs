@@ -4,6 +4,7 @@ use nom::IResult::Done;
 #[cfg(feature = "verbose-errors")]
 use nom::Err::Position;
 use std::str;
+use helpers::buf_to_i32;
 
 #[allow(dead_code)]
 named!(tag_quote, tag!("\""));
@@ -52,14 +53,39 @@ named!(tag_signal_value, delimited!(
     take_until!("/"),
     tag!("/")
     ) );
+
+#[allow(dead_code)]
+mod helpers {
+    // shameless stolen from Jan-Erik Rediger's excellent https://github.com/badboy/iso8601
+    use std::str::{FromStr, from_utf8_unchecked};
+
+    pub fn to_string(s: &[u8]) -> &str {
+        unsafe { from_utf8_unchecked(s) }
+    }
+    pub fn to_i32(s: &str) -> i32 {
+        FromStr::from_str(s).unwrap()
+    }
+    pub fn to_u32(s: &str) -> u32 {
+        FromStr::from_str(s).unwrap()
+    }
+
+    pub fn buf_to_u32(s: &[u8]) -> u32 {
+        to_u32(to_string(s))
+    }
+    pub fn buf_to_i32(s: &[u8]) -> i32 {
+        to_i32(to_string(s))
+    }
+}
+
 #[allow(dead_code)]    
-named!(parse_signal_strength_ubuntu<&str>, ws!(do_parse!( 
+named!(parse_signal_strength_ubuntu<i32>, ws!(do_parse!( 
     tag_signal >> 
-    res: map_res!(tag_signal_value, str::from_utf8) >>
+    res: tag_signal_value >>
     take!(3) >> // junk
-    ( res.into() )
+    ( buf_to_i32(res) )
 ) ) );
 
+#[allow(dead_code)]
 fn calc_decibels(raw : i32) -> i32 {
     ((100 * raw) / 100) / 2 - 100
 }
@@ -90,12 +116,22 @@ mod tests {
 
     #[test]
     fn it_finds_the_signal_strength_for_ubuntu() {
-        assert_eq!(Done(&[][..], "56"), parse_signal_strength_ubuntu(&b"                    Signal level=56/100"[..]) );
+        assert_eq!(Done(&[][..], 56), parse_signal_strength_ubuntu(&b"                    Signal level=56/100"[..]) );
     }
 
     #[test]
     fn it_computes_rssi() {
-        assert_eq!(calc_decibels(50), -75);
+        assert_eq!(calc_decibels(56), -72);
+    }
+
+    #[test]
+    fn it_converts_signal_strength_to_rssi() {
+        if let Done(_,signal_strength) = parse_signal_strength_ubuntu(&b"                    Signal level=56/100"[..]) {
+            assert_eq!(calc_decibels(signal_strength), -72 );
+        } else {
+            println!("Failed to parse signal strength!");
+            assert_eq!(1, 0);
+        }        
     }
 }
 

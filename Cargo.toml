@@ -11,3 +11,4 @@ license = "Apache-2.0"
 
 [dependencies]
 nom = "^2.2"
+clippy = {version = "*", optional = true}
