@@ -44,6 +44,25 @@ named!(parse_channel<&str>, do_parse!( // should probably be an int
     ( res.into() )
 ) );
 
+#[allow(dead_code)]
+named!(tag_signal, tag!("Signal level") );
+#[allow(dead_code)]
+named!(tag_signal_value, delimited!(
+    tag!("="), 
+    take_until!("/"),
+    tag!("/")
+    ) );
+#[allow(dead_code)]    
+named!(parse_signal_strength_ubuntu<&str>, ws!(do_parse!( 
+    tag_signal >> 
+    res: map_res!(tag_signal_value, str::from_utf8) >>
+    take!(3) >> // junk
+    ( res.into() )
+) ) );
+
+fn calc_decibels(raw : i32) -> i32 {
+    ((100 * raw) / 100) / 2 - 100
+}
 
 #[cfg(test)]
 mod tests {
@@ -70,31 +89,13 @@ mod tests {
     }
 
     #[test]
-    fn it_finds_the_rssi_ubuntu() {
-        let rssi = &b"                    Signal level=56/100"[..];
-        let rssi = &b"Signal level=56/100"[..];
-        named!(tag_signal, tag!("Signal level") );
-        println!("tag_signal: {:?}", tag_signal(rssi));
+    fn it_finds_the_signal_strength_for_ubuntu() {
+        assert_eq!(Done(&[][..], "56"), parse_signal_strength_ubuntu(&b"                    Signal level=56/100"[..]) );
+    }
 
-        named!(tag_signal_value, delimited!(
-            tag!("="), 
-            take_until!("/"),
-            tag!("/")
-            ) );
-
-        let signal_val = &b"=56/100"[..];
-        println!("tag_signal_value: {:?}", tag_signal_value(signal_val));
-
-        named!(parse_rssi_ubuntu<&str>, do_parse!( 
-            tag_signal >>
-            res: map_res!(tag_signal_value, str::from_utf8) >>
-            ( res.into() )
-        ) );
-
-        let rssi = &b"Signal level=56/100"[..];
-        println!("parse_rssi_ubuntu: {:?}", parse_rssi_ubuntu(rssi));
-
-        assert_eq!(1,0);
+    #[test]
+    fn it_computes_rssi() {
+        assert_eq!(calc_decibels(50), -75);
     }
 }
 
