@@ -68,7 +68,37 @@ mod tests {
     fn it_finds_the_channel() {
         assert_eq!(Done(&[][..], "6"), parse_channel(&b"                    Frequency:2.437 GHz (Channel 6)"[..]) );
     }
+
+    #[test]
+    fn it_finds_the_rssi_ubuntu() {
+        let rssi = &b"                    Signal level=56/100"[..];
+        let rssi = &b"Signal level=56/100"[..];
+        named!(tag_signal, tag!("Signal level") );
+        println!("tag_signal: {:?}", tag_signal(rssi));
+
+        named!(tag_signal_value, delimited!(
+            tag!("="), 
+            take_until!("/"),
+            tag!("/")
+            ) );
+
+        let signal_val = &b"=56/100"[..];
+        println!("tag_signal_value: {:?}", tag_signal_value(signal_val));
+
+        named!(parse_rssi_ubuntu<&str>, do_parse!( 
+            tag_signal >>
+            res: map_res!(tag_signal_value, str::from_utf8) >>
+            ( res.into() )
+        ) );
+
+        let rssi = &b"Signal level=56/100"[..];
+        println!("parse_rssi_ubuntu: {:?}", parse_rssi_ubuntu(rssi));
+
+        assert_eq!(1,0);
+    }
 }
+
+
 
 
 /* useful snippets
